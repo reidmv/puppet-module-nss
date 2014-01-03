@@ -7,11 +7,21 @@ Puppet::Type.type(:nsswitch).provide(:augeas) do
   default_file  { '/etc/nsswitch.conf' }
   lens          { 'Nsswitch.lns'       }
   resource_path do |resource|
-    "$target/database[.='#{resource[:database]}']"
+    database = resource[:database]
+    service  = resource[:service]
+    "$target/database[.='#{database}']/service[.='#{service}']"
   end
 
   confine    :feature => :augeas
   defaultfor :feature => :augeas
+
+  define_aug_method!(:create) do |aug, resource|
+    aug.defnode(
+      'resource',
+      "$target/database[.='#{resource[:database]}']/service[last()+1]",
+      resource[:service]
+    )
+  end
 
   def self.instances
     resources = []

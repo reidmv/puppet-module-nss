@@ -3,31 +3,32 @@ Puppet::Type.newtype(:nsswitch) do
 
   ensurable
 
+  newparam(:target) do
+    desc "The file in which to store the settings."
+  end
+
   newparam(:database) do
     isnamevar
     desc "The Name Service Database pertinent to the resource."
   end
 
-  newparam(:target) do
-    desc "The file in which to store the settings."
-  end
-
-  newproperty(:service) do
+  newparam(:service) do
     isnamevar
     desc "The name of the service to ensure."
   end
 
-  newproperty(:reaction, :array_matching => :all) do
-    desc "The reaction on lookup result (like NOTFOUND=return)."
+  newparam(:name) do
+    desc "The name of the resource"
+    munge do |name|
+      @resource[:database] + ':' + @resource[:service]
+    end
   end
 
   def self.title_patterns
     identity = lambda {|x| x}
-    [ [
-        /^([^:]+)$/,
+    [ [ /^([^:]+)$/,
         [ [ :name, identity ] ]
-    ],[
-        /^(.*):(.*)$/,
+    ],[ /^(.*):(.*)$/,
         [ [ :database, identity ],
           [ :service,  identity ] ]
     ] ]
